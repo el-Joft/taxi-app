@@ -1,0 +1,68 @@
+Configuring Channels
+
+At settings.py file add
+
+REDIS_URL = os.getenv('REDIS_URL', 'redis://localhost:6379')
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [REDIS_URL],
+        },
+    },
+}
+
+At the installed app add 
+'channels',
+'rest_framework',
+
+create a file called routing.py, add the below code
+
+from channels.routing import ProtocolTypeRouter
+
+application = ProtocolTypeRouter({})
+
+# taxi/settings.py
+
+ASGI_APPLICATION = 'taxi.routing.application'
+
+Also, add a new asgi.py file alongside the wsgi.py file.
+
+
+import os
+import django
+
+from channels.routing import get_default_application
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'taxi.settings')
+django.setup()
+application = get_default_application()
+
+
+In DRF we have four authentication to choose from
+
+BasicAuthentication
+RemoteUserAuthentication - requires passing the authentication to the third party, the third party is a centralized single sign-on server that supports a protocol such as LDAP, CAS, or SAML.
+SessionAuthentication
+TokenAuthentication
+Session and Token exchange user credentials over an encrypted string
+
+
+Since we are working on Websocket, and it is designed to work on mobile app, TokenAuthentication will be redesigned to fit in
+
+Add this to the settings.py
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    )
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': datetime.timedelta(minutes=5),
+    'REFRESH_TOKEN_LIFETIME': datetime.timedelta(days=1),
+    'USER_ID_CLAIM': 'id',
+}
+
+Create a test directory for all our tests
