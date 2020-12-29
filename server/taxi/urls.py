@@ -26,4 +26,5 @@ urlpatterns = [
     path('api/log_in/', LogInView.as_view(), name='log_in'), # new
     path('api/token/refresh/', TokenRefreshView.as_view(),
          name='token_refresh'),
+    path('api/trip/', include('trips.urls', 'trip',)), # new
 ]
