@@ -129,3 +129,8 @@ The receive_json() function is responsible for processing all messages that come
 Our message is an object with a type and a data payload. Passing a type is a Channels convention that serves two purposes. 
 First, it helps differentiate incoming messages and tells the server how to process them. 
 Second, the type maps directly to a consumer function when sent from another channel layer.
+
+
+
+Authenticating Socket Connections
+Establishing a WebSocket connection starts with a “handshake” between the client and the server over HTTP.

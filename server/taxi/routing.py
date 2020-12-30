@@ -5,7 +5,7 @@ from channels.routing import ProtocolTypeRouter, URLRouter # changed
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "taxi.settings")
 
-
+from .middleware import TokenAuthMiddlewareStack
 from trips.consumers import TaxiConsumer
 
 
@@ -13,7 +13,8 @@ application = ProtocolTypeRouter({
    # Django's ASGI application to handle traditional HTTP requests
     "http": get_asgi_application(),
     # WebSocket chat handler
-    "websocket": URLRouter([
+    "websocket": TokenAuthMiddlewareStack(URLRouter([
         path('taxi/', TaxiConsumer.as_asgi()),
     ]),
+    ),
 })

@@ -5,13 +5,19 @@ from channels.generic.websocket import AsyncJsonWebsocketConsumer
 class TaxiConsumer(AsyncJsonWebsocketConsumer):
     groups = ['test'] # new
     async def connect(self):
-        # this was changed to enable group connection
-        # it enables any connection to the TaxiConsumer to enable subscription to the test group
-        await self.channel_layer.group_add(
-            group='test',
-            channel=self.channel_name
-        )
-        await self.accept()
+        # check if the user is authenticated
+        user = self.scope['user']
+        if user.is_anonymous:
+            await self.close()
+        else:
+
+            # this was changed to enable group connection
+            # it enables any connection to the TaxiConsumer to enable subscription to the test group
+            await self.channel_layer.group_add(
+                group='test',
+                channel=self.channel_name
+            )
+            await self.accept()
 
     # The receive_json() function is responsible for processing all messages that come to the server.
     async def receive_json(self, content, **kwargs):
