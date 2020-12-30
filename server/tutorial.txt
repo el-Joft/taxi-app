@@ -66,3 +66,66 @@ SIMPLE_JWT = {
 }
 
 Create a test directory for all our tests
+
+
+
+
+Setting Up Websocket
+
+# tests/test_websocket.py
+
+from channels.testing import WebsocketCommunicator
+import pytest
+
+from taxi.routing import application
+
+
+TEST_CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    },
+}
+
+
+@pytest.mark.asyncio
+class TestWebSocket:
+    async def test_can_connect_to_server(self, settings):
+        settings.CHANNEL_LAYERS = TEST_CHANNEL_LAYERS
+        communicator = WebsocketCommunicator(
+            application=application,
+            path='/taxi/'
+        )
+        connected, _ = await communicator.connect()
+        assert connected is True
+        await communicator.disconnect()
+
+Create a channel consumer
+
+from channels.generic.websocket import AsyncJsonWebsocketConsumer
+
+
+class TaxiConsumer(AsyncJsonWebsocketConsumer):
+    async def connect(self):
+        await self.accept()
+
+    async def disconnect(self, code):
+        await super().disconnect(code)
+
+Note: A Channels consumer is like a Django view with extra steps to support the WebSocket protocol. 
+Whereas a Django view can only process an incoming request, a Channels consumer can send and receive messages 
+and react to the WebSocket connection being opened and closed.
+
+
+async def receive_json(self, content, **kwargs):
+        print(content)
+        message_type = content.get('type')
+        if message_type == 'echo.message':
+            await self.send_json({
+                'type': message_type,
+                'data': content.get('data'),
+            })
+
+The receive_json() function is responsible for processing all messages that come to the server.
+Our message is an object with a type and a data payload. Passing a type is a Channels convention that serves two purposes. 
+First, it helps differentiate incoming messages and tells the server how to process them. 
+Second, the type maps directly to a consumer function when sent from another channel layer.
